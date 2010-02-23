@@ -59,44 +59,46 @@ class DSEHandler(webapp.RequestHandler):
             return
 
         dseresult = urlfetch.fetch(dselatest)
-        if dseresult.status_code == 200:
-            dsecontent = dseresult.content
-            dsecontent = dsesanere.sub('<body>', dsecontent)
+        if not dseresult.status_code == 200:
+            self.response.out.write(fetch_error_message)
+            return
 
-            soup = BeautifulSoup(dsecontent)
-            headtr = soup.body.table.tr.findAll('b')
+        dsecontent = dseresult.content
+        dsecontent = dsesanere.sub('<body>', dsecontent)
 
-            output = StringIO.StringIO()
-            csvfile = csv.writer(output)
-            heads = []
-            for h in headtr:
-                heads.append(str(h.contents[0]).replace('&nbsp;', '').strip())
+        soup = BeautifulSoup(dsecontent)
+        headtr = soup.body.table.tr.findAll('b')
 
-            heads.insert(1, "Date Time")
-            csvfile.writerow(heads)
+        output = StringIO.StringIO()
+        csvfile = csv.writer(output)
+        heads = []
+        for h in headtr:
+            heads.append(str(h.contents[0]).replace('&nbsp;', '').strip())
 
-            data = soup.body.table.findAll('tr')[1:]
-            for row in data:
-                row = row.findAll('td')[1:]
-                d = [row[0].a.contents[0],]
-                d.append(last_update)
-                for col in row[1:]:
-                    d.append(col.find(text=True))
+        heads.insert(1, "Date Time")
+        csvfile.writerow(heads)
 
-                if d[-1] != '0':
-                    csvfile.writerow(d)
+        data = soup.body.table.findAll('tr')[1:]
+        for row in data:
+            row = row.findAll('td')[1:]
+            d = [row[0].a.contents[0],]
+            d.append(last_update)
+            for col in row[1:]:
+                d.append(col.find(text=True))
 
-            csvdata = output.getvalue()
-            output.close()
+            if d[-1] != '0':
+                csvfile.writerow(d)
 
-            self.response.out.write(csvdata)
+        csvdata = output.getvalue()
+        output.close()
 
-            memcache.set(data_key, csvdata, cache_time)
+        self.response.out.write(csvdata)
 
-            logging.info('fetched real data')
-        else:
-            self.response.out.write('Sorry, there was a problem downloading'
-                                    ' data from main server!')
+        memcache.set(data_key, csvdata, cache_time)
+
+        logging.info('fetched real data')
+
+
 
 
 def main():
