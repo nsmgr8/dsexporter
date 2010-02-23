@@ -23,6 +23,8 @@ dselatest = dseroot + "latest_share_price_all.php"
 dsesanere = re.compile(r'<body[^>]*>')
 datere = re.compile(r'[a-zA-Z]{3}\s*\d{2},\s*\d{4}\s*at\s*\d{2}:\d{2}:\d{2}')
 
+fetch_error_message = 'Sorry, there was an error fetching data from main server.'
+
 time_key = 'timekey'
 data_key = 'csvdata'
 cache_time = 10 * 60 # ten minutes
