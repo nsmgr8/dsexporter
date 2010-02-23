@@ -23,10 +23,17 @@ dselatest = dseroot + "latest_share_price_all.php"
 dsesanere = re.compile(r'<body[^>]*>')
 datere = re.compile(r'[a-zA-Z]{3}\s*\d{2},\s*\d{4}\s*at\s*\d{2}:\d{2}:\d{2}')
 
+cselatest = "http://www.csebd.com/trade/top.htm"
+csedatere = re.compile(r'Date: '
+                       r'[a-zA-Z]{3}\s*\d{2}\s*\d{4}\s*\d{1,2}:\d{1,2}(AM|PM)')
+csedatare = re.compile(r'\w+\s*')
+
 fetch_error_message = 'Sorry, there was an error fetching data from main server.'
 
 time_key = 'timekey'
 data_key = 'csvdata'
+cse_key = 'csedata'
+csedate_key = 'csedate'
 cache_time = 10 * 60 # ten minutes
 
 class DSEHandler(webapp.RequestHandler):
@@ -101,10 +108,37 @@ class DSEHandler(webapp.RequestHandler):
         logging.info('fetched real data')
 
 
+class CSEHandler(webapp.RequestHandler):
+
+    def get(self):
+        last_update = memcache.get(csedate_key)
+        if last_update:
+            csvname = 'cse-%s.csv' % last_update.isoformat()
+
+        cseresult = urlfetch.fetch(cselatest)
+        if not cseresult.status_code == 200:
+            self.response.out.write(fetch_error_message)
+            return
+
+        content = cseresult.content
+        if not last_update:
+            csvname = csedatere.search(content).group()
+            logging.info(csvname)
+
+        print content
+        print csedatare.search(content).group()
+
+        self.response.headers.add_header('content-disposition',
+                                         'attachment', filename=csvname)
+        self.response.headers['Content-Type'] = 'text/csv'
+        csvdata = memcache.get(cse_key)
+        if csvdata:
+            return
 
 
 def main():
-  application = webapp.WSGIApplication([('/', DSEHandler)],
+  application = webapp.WSGIApplication([('/', DSEHandler),
+                                        ('/cse', CSEHandler)],
                                        debug=True)
   util.run_wsgi_app(application)
 
