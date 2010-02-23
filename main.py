@@ -21,9 +21,8 @@ dseurl = "http://www.dsebd.org/latest_share_price_all.php"
 dsesanere = re.compile('<body[^>]*>')
 
 data_key = 'csvdata'
-fetch_key = 'lastfetch'
 
-dt = datetime.timedelta(minutes=1)
+dt = datetime.timedelta(minutes=10)
 
 class DSEHandler(webapp.RequestHandler):
 
@@ -35,14 +34,11 @@ class DSEHandler(webapp.RequestHandler):
                                          'attachment', filename=csvname)
         self.response.headers['Content-Type'] = 'text/csv'
 
-        lastfetch = memcache.get(fetch_key)
-        if lastfetch:
-            if now - lastfetch < dt:
-                csvdata = memcache.get(data_key)
-                if csvdata:
-                    self.response.out.write(csvdata)
-                    logging.info('returning from cache')
-                    return
+        csvdata = memcache.get(data_key)
+        if csvdata:
+            self.response.out.write(csvdata)
+            logging.info('returning from cache')
+            return
 
         dseresult = urlfetch.fetch(dseurl)
         if dseresult.status_code == 200:
@@ -77,8 +73,7 @@ class DSEHandler(webapp.RequestHandler):
 
             self.response.out.write(csvdata)
 
-            memcache.add(data_key, csvdata)
-            memcache.add(fetch_key, datetime.datetime.now())
+            memcache.set(data_key, csvdata, 60)
 
             logging.info('fetched real data')
         else:
