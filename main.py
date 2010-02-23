@@ -33,7 +33,7 @@ class DSEHandler(webapp.RequestHandler):
 
         self.response.headers.add_header('content-disposition',
                                          'attachment', filename=csvname)
-        self.response.headers.add_header('content-type', 'text/csv')
+        self.response.headers['Content-Type'] = 'text/csv'
 
         lastfetch = memcache.get(fetch_key)
         if lastfetch:
