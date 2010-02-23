@@ -21,8 +21,7 @@ dseurl = "http://www.dsebd.org/latest_share_price_all.php"
 dsesanere = re.compile('<body[^>]*>')
 
 data_key = 'csvdata'
-
-dt = datetime.timedelta(minutes=10)
+cache_time = 10 * 60 # ten minutes
 
 class DSEHandler(webapp.RequestHandler):
 
@@ -52,9 +51,7 @@ class DSEHandler(webapp.RequestHandler):
             csvfile = csv.writer(output)
             heads = []
             for h in headtr:
-                heads.append(
-                    str(h).replace('&nbsp;',
-                        '').strip('<b>').strip('</b>').strip())
+                heads.append(str(h.contents[0]).replace('&nbsp;', ''))
 
             csvfile.writerow(heads)
 
@@ -73,7 +70,7 @@ class DSEHandler(webapp.RequestHandler):
 
             self.response.out.write(csvdata)
 
-            memcache.set(data_key, csvdata, 60)
+            memcache.set(data_key, csvdata, cache_time)
 
             logging.info('fetched real data')
         else:
