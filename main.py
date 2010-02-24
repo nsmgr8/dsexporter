@@ -27,7 +27,7 @@ fetch_error_message = 'Sorry, there was an error fetching data from main server.
 
 time_key = 'timekey'
 data_key = 'csvdata'
-cache_time = 10 * 60 # ten minutes
+cache_time = 2 * 60
 
 class DSEHandler(webapp.RequestHandler):
 
