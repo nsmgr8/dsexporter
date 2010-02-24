@@ -7,12 +7,13 @@ __license__ = "New-style BSD"
 
 import csv
 import datetime
+import os
 import logging
 import re
 import StringIO
 
 from google.appengine.ext import webapp
-from google.appengine.ext.webapp import util
+from google.appengine.ext.webapp import util, template
 
 from google.appengine.api import urlfetch, memcache
 from BeautifulSoup import BeautifulSoup
@@ -30,6 +31,12 @@ data_key = 'dsedata'
 cse_key = 'csedata'
 csedate_key = 'csedate'
 cache_time = 1 * 60
+
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
+
+def render(template_name, template_values):
+    template_path = os.path.join(TEMPLATE_DIR, template_name)
+    return template.render(template_path, template_values)
 
 class DSEHandler(webapp.RequestHandler):
 
@@ -184,8 +191,15 @@ class CSEHandler(webapp.RequestHandler):
         logging.info('fetched real data')
 
 
+class MainHandler(webapp.RequestHandler):
+
+    def get(self):
+        self.response.out.write(render('index.html', {}))
+
+
 def main():
-  application = webapp.WSGIApplication([('/dse', DSEHandler),
+  application = webapp.WSGIApplication([('/', MainHandler),
+                                        ('/dse', DSEHandler),
                                         ('/cse', CSEHandler)],
                                        debug=True)
   util.run_wsgi_app(application)
