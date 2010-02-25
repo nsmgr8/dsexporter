@@ -38,6 +38,12 @@ def render(template_name, template_values):
     template_path = os.path.join(TEMPLATE_DIR, template_name)
     return template.render(template_path, template_values)
 
+
+def _set_csv_header(headers, csvname):
+    headers.add_header('content-disposition', 'attachment', filename=csvname)
+    headers['Content-Type'] = 'text/csv'
+
+
 class DSEHandler(webapp.RequestHandler):
 
     dsesanere = re.compile(r'<body[^>]*>')
@@ -61,10 +67,7 @@ class DSEHandler(webapp.RequestHandler):
     def get(self):
         last_update = self._get_time()
         csvname = 'dse-%s.csv' % last_update.isoformat()
-
-        self.response.headers.add_header('content-disposition',
-                                         'attachment', filename=csvname)
-        self.response.headers['Content-Type'] = 'text/csv'
+        _set_csv_header(self.response.headers, csvname)
 
         csvdata = memcache.get(dse_key)
         if csvdata:
@@ -77,10 +80,7 @@ class DSEHandler(webapp.RequestHandler):
             self.response.out.write(fetch_error_message)
             return
 
-        dsecontent = dseresult.content
-        dsecontent = self.dsesanere.sub('<body>', dsecontent)
-
-        soup = BeautifulSoup(dsecontent)
+        soup = BeautifulSoup(self.dsesanere.sub('<body>', dseresult.content))
         headtr = soup.body.table.tr.findAll('b')
 
         output = StringIO.StringIO()
@@ -111,7 +111,6 @@ class DSEHandler(webapp.RequestHandler):
         self.response.out.write(csvdata)
 
         memcache.set(dse_key, csvdata, cache_time)
-
         logging.info('fetched real data')
 
 
@@ -134,10 +133,7 @@ class CSEHandler(webapp.RequestHandler):
         csvdata = memcache.get(cse_key)
         if csvdata and last_update is not None:
             csvname = 'cse-%s.csv' % last_update.isoformat()
-
-            self.response.headers.add_header('content-disposition',
-                                             'attachment', filename=csvname)
-            self.response.headers['Content-Type'] = 'text/csv'
+            _set_csv_header(self.response.headers, csvname)
             self.response.out.write(csvdata)
 
             logging.info('retrieved from cache')
@@ -148,8 +144,7 @@ class CSEHandler(webapp.RequestHandler):
             self.response.out.write(fetch_error_message)
             return
 
-        content = cseresult.content
-        soup = BeautifulSoup(content)
+        soup = BeautifulSoup(cseresult.content)
         precontents = soup.body.findAll('pre')
 
         sdate = list(self.csedatere.search(precontents[0].contents[0]).groups())
@@ -179,18 +174,14 @@ class CSEHandler(webapp.RequestHandler):
             except:
                 pass
 
-        self.response.headers.add_header('content-disposition',
-                                         'attachment', filename=csvname)
-        self.response.headers['Content-Type'] = 'text/csv'
-
         csvdata = output.getvalue()
         output.close()
 
+        _set_csv_header(self.response.headers, csvname)
         self.response.out.write(csvdata)
 
         memcache.set(cse_key, csvdata, cache_time)
         memcache.set(csedate_key, last_update, cache_time)
-
         logging.info('fetched real data')
 
 
