@@ -89,14 +89,16 @@ class DSEHandler(webapp.RequestHandler):
         for h in headtr:
             heads.append(str(h.contents[0]).replace('&nbsp;', '').strip())
 
-        heads.insert(1, "Date Time")
+        heads.insert(1, "Date")
+        heads.insert(2, "Time")
         csvfile.writerow(heads)
 
         data = soup.body.table.findAll('tr')[1:]
         for row in data:
             row = row.findAll('td')[1:]
 
-            d = [row[0].a.contents[0], last_update]
+            d = [row[0].a.contents[0], last_update.strftime("%m-%d-%Y"),
+                 last_update.strftime("%H:%M:%S")]
             for col in row[1:]:
                 d.append(col.find(text=True))
 
@@ -161,7 +163,7 @@ class CSEHandler(webapp.RequestHandler):
 
         output = StringIO.StringIO()
         csvfile = csv.writer(output)
-        heads = ['Company', 'Date Time', 'Open', 'High', 'Low', 'Close',
+        heads = ['Company', 'Date', 'Time', 'Open', 'High', 'Low', 'Close',
                  'Prev. Close', 'Difference', 'Trades', 'Volume',]
         csvfile.writerow(heads)
 
@@ -171,7 +173,8 @@ class CSEHandler(webapp.RequestHandler):
                 data = list(self.csedatare.search(content).groups())
                 if data[-1] == '0':
                     continue
-                data.insert(1, last_update)
+                data.insert(1, last_update.strftime("%m-%d-%Y"))
+                data.insert(2, last_update.strftime("%H:%M:%S"))
                 csvfile.writerow(data)
             except:
                 pass
