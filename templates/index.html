@@ -3,8 +3,118 @@
 	<head>
 		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 		<title>DSE and CSE data exporter</title>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+		<script type="text/javascript" language="javascript" charset="utf-8">
+			// <![CDATA[
+			ajaxload = function(se) {
+					$.ajax({
+						url: "/" + se,
+						success: function(data) {
+							table_id = "#" + se + "_intra_day";
+
+							data = data.split("\r\n");
+							headers = data[0].split(",");
+
+							datatable = "<tr>";
+							for(i=0; i<headers.length; i++) {
+								datatable += "<th>" + headers[i] + "</th>";
+							}
+							datatable += "</tr>";
+							$(table_id + " thead").html(datatable);
+
+							datatable = "";
+							for(i=1; i<data.length; i++) {
+								d = data[i].split(",");
+								datatable += '<tr class="'+ ((i % 2 == 0) ? "even" : "odd") + '">';
+								for(j=0; j<d.length; j++) {
+									datatable += '<td>' + d[j] + "</td>";
+								}
+								datatable += "</tr>";
+							}
+
+							$(table_id + " tbody").html(datatable);
+							elem = $(table_id + " tbody td");
+							elem.each(function() {
+									if($(this).html()[0] == "-") {
+										$(this).css('color', 'red');
+									}
+							});
+							setTimeout("ajaxload('"+se+"')", 50000);
+						}
+					});
+			}
+			$(function() {
+					ajaxload('dse');
+					ajaxload('cse');
+			});
+			// ]]>
+		</script>
+		<style>
+			header, footer {
+				display: block;
+			}
+			footer {
+				border-top: 2px solid #ddd;
+				font-size: 80%;
+				margin: 10px auto;
+				padding: 10px;
+			}
+			table {
+				min-width: 100%;
+			}
+			caption {
+				background: #fdd;
+				padding: 5px;
+				font-size: 150%;
+				font-weight: bold;
+			}
+			thead tr {
+				background: #ddf;
+			}
+			tbody tr.even {
+				background: #dfd;
+			}
+			noscript {
+				background: #161;
+				color: #ffd;
+				padding: 10px 20px;
+				display: block;
+			}
+			.csvlink {
+				font-size: 200%;
+				background: #fdf;
+				color: #161;
+			}
+			.csvlink:hover {
+				background: #161;
+				color: #fdf;
+			}
+		</style>
 	</head>
 	<body>
-		Get CSV files for current <a href="/dse">DSE</a> and <a href="/cse">CSE</a> share data.
+		<header><h1>DSE, CSE data exporter tool</h1></header>
+		<aside>Get CSV files for current <a href="/dse" class="csvlink">DSE</a> and <a
+			href="/cse" class="csvlink">CSE</a> share data.</aside>
+		<div id="tables">
+			<noscript>Javascript is disabled in your browser. Should it be enabled, you
+				could see live data in the following tables.</noscript>
+			<table id="dse_intra_day">
+				<caption>DSE intra day share data</caption>
+				<thead><tr><td>Loading...</td></tr></thead>
+				<tbody></tbody>
+			</table>
+			<table id="cse_intra_day">
+				<caption>CSE intra day share data</caption>
+				<thead><tr><td>Loading...</td></tr></thead>
+				<tbody></tbody>
+			</table>
+		</div>
+		<footer>
+		<h2>Disclaimer</h2>
+		This site is not affiliated with DSE or CSE. This is just a convenient csv
+		file exporter of which data are collected from DSE and CSE sites. This site
+		does not take any responsibility for any kind of damages that may occur to
+		the data users.
+		</footer>
 	</body>
 </html>
