@@ -32,13 +32,13 @@
 								datatable += "</tr>";
 							}
 
-							$(table_id + " tbody").html(datatable);
-							elem = $(table_id + " tbody td");
-							elem.each(function() {
+							$(table_id + " tbody").fadeOut('slow').html(datatable).fadeIn('slow');
+							$(table_id + " tbody td").each(function() {
 									if($(this).html()[0] == "-") {
 										$(this).css('color', 'red');
 									}
 							});
+
 							setTimeout("ajaxload('"+se+"')", 50000);
 						}
 					});
