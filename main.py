@@ -26,8 +26,8 @@ cselatest = "http://www.csebd.com/trade/top.htm"
 
 fetch_error_message = 'Sorry, there was an error fetching data from main server.'
 
-time_key = 'dsedate'
-data_key = 'dsedata'
+dse_key = 'dsedata'
+dsedate_key = 'dsedate'
 cse_key = 'csedata'
 csedate_key = 'csedate'
 cache_time = 1 * 60
@@ -44,7 +44,7 @@ class DSEHandler(webapp.RequestHandler):
     datere = re.compile(r'[a-zA-Z]{3}\s*\d{2},\s*\d{4}\s*at\s*\d{2}:\d{2}:\d{2}')
 
     def _get_time(self):
-        last_update = memcache.get(time_key)
+        last_update = memcache.get(dsedate_key)
         if last_update is not None:
             return last_update
 
@@ -55,7 +55,7 @@ class DSEHandler(webapp.RequestHandler):
             last_update = datetime.datetime.strptime(last_update, "%b%d,%Yat"
                                                      "%H:%M:%S")
             logging.info("Last update on %s" % (last_update))
-            memcache.set(time_key, last_update, cache_time)
+            memcache.set(dsedate_key, last_update, cache_time)
             return last_update
 
     def get(self):
@@ -66,7 +66,7 @@ class DSEHandler(webapp.RequestHandler):
                                          'attachment', filename=csvname)
         self.response.headers['Content-Type'] = 'text/csv'
 
-        csvdata = memcache.get(data_key)
+        csvdata = memcache.get(dse_key)
         if csvdata:
             self.response.out.write(csvdata)
             logging.info('returning from cache')
@@ -110,7 +110,7 @@ class DSEHandler(webapp.RequestHandler):
 
         self.response.out.write(csvdata)
 
-        memcache.set(data_key, csvdata, cache_time)
+        memcache.set(dse_key, csvdata, cache_time)
 
         logging.info('fetched real data')
 
