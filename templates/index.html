@@ -38,14 +38,14 @@
 										$(this).css('color', 'red');
 									}
 							});
-
-							setTimeout("ajaxload('"+se+"')", 50000);
 						}
 					});
 			}
 			$(function() {
 					ajaxload('dse');
 					ajaxload('cse');
+					setInterval("ajaxload('dse')", 10000);
+					setInterval("ajaxload('cse')", 10000);
 			});
 			// ]]>
 		</script>
@@ -60,7 +60,7 @@
 				padding: 10px;
 			}
 			table {
-				min-width: 100%;
+				width: 100%;
 			}
 			caption {
 				background: #fdd;
