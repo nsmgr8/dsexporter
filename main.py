@@ -118,7 +118,7 @@ class CSEHandler(webapp.RequestHandler):
 
     csedatere = re.compile(r'Date: '
                            r'([a-zA-Z]{3})\s*(\d{2})\s*(\d{4})\s*(\d{1,2}):(\d{1,2})(AM|PM)')
-    csedatare = re.compile(r'^\s*(\w{3,5}).*?'
+    csedatare = re.compile(r'^\s*(\w+).*?'
                            '(\d+\.{0,1}\d*)\s+'
                            '(\d+\.{0,1}\d*)\s+'
                            '(\d+\.{0,1}\d*)\s+'
