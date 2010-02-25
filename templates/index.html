@@ -27,7 +27,7 @@
 								d = data[i].split(",");
 								datatable += '<tr class="'+ ((i % 2 == 0) ? "even" : "odd") + '">';
 								for(j=0; j<d.length; j++) {
-									datatable += '<td>' + d[j] + "</td>";
+									datatable += '<td' + (j > 2 ? ' class=number' : '') + '>' + d[j] + "</td>";
 								}
 								datatable += "</tr>";
 							}
@@ -73,6 +73,9 @@
 			}
 			tbody tr.even {
 				background: #dfd;
+			}
+			.number {
+				text-align: right;
 			}
 			noscript {
 				background: #161;
