@@ -47,7 +47,7 @@ def _set_csv_header(headers, csvname):
 class DSEHandler(webapp.RequestHandler):
 
     dsesanere = re.compile(r'<body[^>]*>')
-    datere = re.compile(r'[a-zA-Z]{3}\s*\d{2},\s*\d{4}\s*at\s*\d{2}:\d{2}:\d{2}')
+    datere = re.compile(r'[a-zA-Z]{3}\s*\d{1,2},\s*\d{4}\s*at\s*\d{2}:\d{2}:\d{2}')
 
     def _get_time(self):
         last_update = memcache.get(dsedate_key)
@@ -117,7 +117,7 @@ class DSEHandler(webapp.RequestHandler):
 class CSEHandler(webapp.RequestHandler):
 
     csedatere = re.compile(r'Date: '
-                           r'([a-zA-Z]{3})\s*(\d{2})\s*(\d{4})\s*(\d{1,2}):(\d{1,2})(AM|PM)')
+                           r'([a-zA-Z]{3})\s*(\d{1,2})\s*(\d{4})\s*(\d{1,2}):(\d{1,2})(AM|PM)')
     csedatare = re.compile(r'^\s*(\w+).*?'
                            '(\d+\.{0,1}\d*)\s+'
                            '(\d+\.{0,1}\d*)\s+'
