@@ -1,0 +1,4 @@
+cron:
+- description: fetch dse data
+  url: /dse
+  schedule: every 1 minutes
