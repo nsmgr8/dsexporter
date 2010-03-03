@@ -28,6 +28,7 @@ fetch_error_message = 'Sorry, there was an error fetching data from main server.
 
 dse_key = 'dsedata'
 dsedate_key = 'dsedate'
+dse_last_saved_key = 'dselastsaved'
 cse_key = 'csedata'
 csedate_key = 'csedate'
 cache_time = 1 * 60
@@ -69,11 +70,13 @@ class DSEHandler(webapp.RequestHandler):
         csvname = 'dse-%s.csv' % last_update.isoformat()
         _set_csv_header(self.response.headers, csvname)
 
-        csvdata = memcache.get(dse_key)
-        if csvdata:
-            self.response.out.write(csvdata)
-            logging.info('returning from cache')
-            return
+        last_saved = memcache.get(dse_last_saved_key)
+        if last_saved == last_update:
+            csvdata = memcache.get(dse_key)
+            if csvdata:
+                self.response.out.write(csvdata)
+                logging.info('returning from cache')
+                return
 
         dseresult = urlfetch.fetch(dselatest)
         if not dseresult.status_code == 200:
@@ -110,7 +113,8 @@ class DSEHandler(webapp.RequestHandler):
 
         self.response.out.write(csvdata)
 
-        memcache.set(dse_key, csvdata, cache_time)
+        memcache.set(dse_key, csvdata)
+        memcache.set(dse_last_saved_key, last_update)
         logging.info('fetched real data')
 
 
